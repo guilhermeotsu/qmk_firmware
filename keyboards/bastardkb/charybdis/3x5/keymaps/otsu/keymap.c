@@ -43,30 +43,20 @@ enum charybdis_keymap_layers {
     _TIL
 };
 
-enum custom_keycodes {
-    TLG1 = SAFE_RANGE,
-    TLG2,
-    TLG3,
-    TLG4,
-    TLG5,
-    TLG6,
-    TD_DOT
-};
-
-void tg_dragscroll_layer(keyrecord_t *record, uint16_t key, uint16_t lay){
+void tg_function_layer(keyrecord_t *record, uint16_t key, uint16_t lay, void (*toggle_fn)(bool)){
     // Tap send the key
-    // Hold active layer and drag scroll
+    // Hold active layer and execute the function passed in toggle_fn
     // Didn't do this with tap dance because I don't have memory enough
     if (record->event.pressed) {
         if(record->tap.count == 0) {
-            charybdis_set_pointer_dragscroll_enabled(true);
+            toggle_fn(true);
             layer_on(lay);
         } else {
             register_code(key);
         }
     } else {
         if (record->tap.count == 0) {
-            charybdis_set_pointer_dragscroll_enabled(false);
+            toggle_fn(false);
             layer_off(lay);
         } else {
             unregister_code(key);
@@ -79,48 +69,18 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   switch(keycode) {
       case SP_NUM:
           press = KC_SPC;
-          tg_dragscroll_layer(record, press, _NAV);
+          tg_function_layer(record, press, _NAV, charybdis_set_pointer_dragscroll_enabled);
           return false;
       case SL_FUN:
           press = KC_SLSH;
-          tg_dragscroll_layer(record, press, _FUN);
+          tg_function_layer(record, press, _FUN, charybdis_set_pointer_dragscroll_enabled);
           return false;
       case Z_MOUSE:
-            if (record->event.pressed) {
-                if(record->tap.count == 0) {
-                    charybdis_set_pointer_sniping_enabled(true);
-                    layer_on(_MOUSE);
-                } else {
-                    register_code(KC_Z);
-                }
-            } else {
-                if (record->tap.count == 0) {
-                    charybdis_set_pointer_sniping_enabled(false);
-                    layer_off(_MOUSE);
-                } else {
-                    unregister_code(KC_Z);
-                }
-            }
+          press = KC_Z;
+          tg_function_layer(record, press, _MOUSE, charybdis_set_pointer_sniping_enabled);
           return false;
-      case TLG1:
-          press = LALT(KC_1);
-          break;
-      case TLG2:
-          press = LALT(KC_2);
-          break;
-      case TLG3:
-          press = LALT(KC_3);
-          break;
-      case TLG4:
-          press = LALT(KC_4);
-          break;
-      case TLG5:
-          press = LALT(KC_5);
-          break;
-      case TLG6:
-          press = LALT(KC_6);
-          break;
   }
+
   if (record->event.pressed) {
     register_code16(press);
   } else {
@@ -165,7 +125,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   // ├─────────────────────────────────────────────┤ ├─────────────────────────────────────────────┤
        KC_TILD, KC_1, KC_2, KC_3, XXXXXXX,             XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
   // ╰─────────────────────────────────────────────┤ ├─────────────────────────────────────────────╯
-                         KC_0,    XXXXXXX, KC_MINS,    _______, XXXXXXX
+                         KC_0,    XXXXXXX, KC_MINS,    XXXXXXX, _______
   //                   ╰───────────────────────────╯ ╰──────────────────╯
   ),
 
@@ -189,7 +149,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   // ├─────────────────────────────────────────────┤ ├─────────────────────────────────────────────┤
        KC_GRV, KC_EXLM, KC_AT,  KC_HASH, KC_PLUS,     XXXXXXX, KC_LCBR,  KC_RCBR, XXXXXXX, KC_BSLS,
   // ╰─────────────────────────────────────────────┤ ├─────────────────────────────────────────────╯
-                         XXXXXXX, XXXXXXX, KC_UNDS,    XXXXXXX, _______
+                         XXXXXXX, XXXXXXX, KC_UNDS,    _______, XXXXXXX
   //                   ╰───────────────────────────╯ ╰──────────────────╯
   ),
 
@@ -209,9 +169,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   // ╭─────────────────────────────────────────────╮ ╭─────────────────────────────────────────────╮
        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,    XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
   // ├─────────────────────────────────────────────┤ ├─────────────────────────────────────────────┤
-       XXXXXXX,   TLG4,     TLG5,    TLG6, XXXXXXX,    KC_MPRV, KC_VOLD, KC_VOLU, KC_MNXT, KC_MUTE,
+       XXXXXXX,  LALT(KC_4), LALT(KC_5), LALT(KC_6),   XXXXXXX,KC_MPRV, KC_VOLD, KC_VOLU, KC_MNXT, KC_MUTE,
   // ├─────────────────────────────────────────────┤ ├─────────────────────────────────────────────┤
-       XXXXXXX,   TLG1,     TLG2,    TLG3, XXXXXXX,    XXXXXXX, XXXXXXX,  XXXXXXX, XXXXXXX, S(KC_BSLS),
+       XXXXXXX,  LALT(KC_1), LALT(KC_2), LALT(KC_3),   XXXXXXX,XXXXXXX, XXXXXXX,  XXXXXXX, XXXXXXX, S(KC_BSLS),
   // ╰─────────────────────────────────────────────┤ ├─────────────────────────────────────────────╯
                          XXXXXXX, XXXXXXX, _______,    XXXXXXX, KC_MPLY
   //                   ╰───────────────────────────╯ ╰──────────────────╯
@@ -230,43 +190,3 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   // ),
 };
 // clang-format on
-
-// tapdance keycodes
-// enum td_keycodes {
-//   ALT_LP // Our example key: `LALT` when held, `(` when tapped. Add additional keycodes for each tapdance.
-// };
-//
-// // define a type containing as many tapdance states as you need
-// typedef enum {
-//   SINGLE_TAP,
-//   SINGLE_HOLD
-// } td_state_t;
-//
-// // create a global instance of the tapdance state type
-// static td_state_t td_state;
-//
-// // function to determine the current tapdance state
-// int cur_dance (qk_tap_dance_state_t *state);
-//
-// // `finished` and `reset` functions for each tapdance keycode
-// void altlp_finished (qk_tap_dance_state_t *state, void *user_data);
-// void altlp_reset (qk_tap_dance_state_t *state, void *user_data);
-//
-// int cur_dance (qk_tap_dance_state_t *state) {
-//   if (state->count == 1) {
-//     if (state->interrupted || !state->pressed) { return SINGLE_TAP; }
-//     else { return SINGLE_HOLD; }
-//   }
-// }
-//
-// void altlp_finished (qk_tap_dance_state_t *state, void *user_data) {
-//   td_state = cur_dance(state);
-//   switch (td_state) {
-//     case SINGLE_TAP:
-//       register_code16(KC_LPRN);
-//       break;
-//     case SINGLE_HOLD:
-//       register_mods(MOD_BIT(KC_LALT)); // for a layer-tap key, use `layer_on(_MY_LAYER)` here
-//       break;
-//   }
-// }
