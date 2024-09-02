@@ -17,6 +17,9 @@
 
 #include QMK_KEYBOARD_H
 
+#ifdef MACCEL_ENABLE
+    #include "maccel/maccel.h"
+#endif
 #define SP_NUM LT(_NAV, KC_SPC)
 #define Z_MOUSE LT(_MOUSE,KC_Z)
 #define SL_FUN LT(_FUN, KC_SLSH)
@@ -42,6 +45,13 @@ enum charybdis_keymap_layers {
     _FUN,
     _TIL
 };
+
+report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
+    // ...
+#ifdef MACCEL_ENABLE
+    return pointing_device_task_maccel(mouse_report);
+#endif
+}
 
 void tg_function_layer(keyrecord_t *record, uint16_t key, uint16_t lay, void (*toggle_fn)(bool)){
     // Tap send the key
