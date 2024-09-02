@@ -85,6 +85,23 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
           press = KC_SLSH;
           tg_dragscroll_layer(record, press, _FUN);
           return false;
+      case Z_MOUSE:
+            if (record->event.pressed) {
+                if(record->tap.count == 0) {
+                    charybdis_set_pointer_sniping_enabled(true);
+                    layer_on(_MOUSE);
+                } else {
+                    register_code(KC_Z);
+                }
+            } else {
+                if (record->tap.count == 0) {
+                    charybdis_set_pointer_sniping_enabled(false);
+                    layer_off(_MOUSE);
+                } else {
+                    unregister_code(KC_Z);
+                }
+            }
+          return false;
       case TLG1:
           press = LALT(KC_1);
           break;
@@ -213,3 +230,43 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   // ),
 };
 // clang-format on
+
+// tapdance keycodes
+// enum td_keycodes {
+//   ALT_LP // Our example key: `LALT` when held, `(` when tapped. Add additional keycodes for each tapdance.
+// };
+//
+// // define a type containing as many tapdance states as you need
+// typedef enum {
+//   SINGLE_TAP,
+//   SINGLE_HOLD
+// } td_state_t;
+//
+// // create a global instance of the tapdance state type
+// static td_state_t td_state;
+//
+// // function to determine the current tapdance state
+// int cur_dance (qk_tap_dance_state_t *state);
+//
+// // `finished` and `reset` functions for each tapdance keycode
+// void altlp_finished (qk_tap_dance_state_t *state, void *user_data);
+// void altlp_reset (qk_tap_dance_state_t *state, void *user_data);
+//
+// int cur_dance (qk_tap_dance_state_t *state) {
+//   if (state->count == 1) {
+//     if (state->interrupted || !state->pressed) { return SINGLE_TAP; }
+//     else { return SINGLE_HOLD; }
+//   }
+// }
+//
+// void altlp_finished (qk_tap_dance_state_t *state, void *user_data) {
+//   td_state = cur_dance(state);
+//   switch (td_state) {
+//     case SINGLE_TAP:
+//       register_code16(KC_LPRN);
+//       break;
+//     case SINGLE_HOLD:
+//       register_mods(MOD_BIT(KC_LALT)); // for a layer-tap key, use `layer_on(_MY_LAYER)` here
+//       break;
+//   }
+// }
